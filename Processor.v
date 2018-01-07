@@ -15,9 +15,9 @@ Register #(29) INSTRUCTION_REG(PM_out_instruction, in_clk, in_rst, INSTRUCTION_R
 
 wire[4:0] CU_in_op_code;
 assign CU_in_op_code = INSTRUCTION_REG_out_current_instruction[28:24];
-wire CU_out_reg_file_wr_en;
+wire CU_out_reg_file_wr_en, CU_out_alu_operand_1_sel;
 wire [1:0]CU_out_alu_op_sel;
-Control_Unit CU(CU_in_op_code, CU_out_reg_file_wr_en, CU_out_alu_op_sel);
+Control_Unit CU(CU_in_op_code, CU_out_reg_file_wr_en, CU_out_alu_op_sel, CU_out_alu_operand_2_sel);
 
 wire REG_FILE_WR_EN_REG_out_reg_file_en;
 Register #(1) REG_FILE_WR_EN_REG(CU_out_reg_file_wr_en, in_clk, in_rst, REG_FILE_WR_EN_REG_out_reg_file_en);
@@ -41,7 +41,11 @@ Register_File REGISTER_FILE(REGISTER_FILE_in_read_reg_1_add, REGISTER_FILE_in_re
 									in_clk, in_rst,
 									REGISTER_FILE_out_reg_1_val, REGISTER_FILE_out_reg_2_val);
 
-ALU ALU_OBJ(REGISTER_FILE_out_reg_1_val, REGISTER_FILE_out_reg_2_val, CU_out_alu_op_sel, ALU_OBJ_out_result);
+wire[15:0] ALU_OPERAND_2_MUX_in_immediate_val = {8'd0, INSTRUCTION_REG_out_current_instruction[7:0]};
+wire[15:0] ALU_OPERAND_2_MUX_out;
+ALU_Operand_2_Mux ALU_OPERAND_2_MUX(ALU_OPERAND_2_MUX_in_immediate_val, REGISTER_FILE_out_reg_2_val,
+									CU_out_alu_operand_2_sel, ALU_OPERAND_2_MUX_out);
+ALU ALU_OBJ(REGISTER_FILE_out_reg_1_val, ALU_OPERAND_2_MUX_out, CU_out_alu_op_sel, ALU_OBJ_out_result);
 									
 
 endmodule
