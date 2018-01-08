@@ -17,14 +17,13 @@ always@(posedge in_clk, negedge in_rst)
 begin
 	if(!in_rst)
 	begin
-		//for(i = 0; i < 255; i = i + 1)
-		//begin
-		//	reg_file[i] <= 0;
-		//end
+		for(i = 0; i < 255; i = i + 1)
+		begin
+			reg_file[i] <= 0;
+		end
 		//remove later
 		reg_file[0] <= 1;
 		reg_file[1] <= 2;
-		reg_file[3] <= 3;
 	end
 	else
 	begin
