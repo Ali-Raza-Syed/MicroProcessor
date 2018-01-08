@@ -2,22 +2,28 @@
 module Processor(in_clk, in_rst);
 input in_clk, in_rst;
 
+wire[28:0] INSTRUCTION_REG_out_current_instruction;
+wire[4:0] CU_in_op_code;
+assign CU_in_op_code = INSTRUCTION_REG_out_current_instruction[28:24];
+wire CU_out_reg_file_wr_en, CU_out_alu_operand_1_sel, CU_out_PC_MUX_sel_1;
+wire [1:0]CU_out_alu_op_sel;
+Control_Unit CU(CU_in_op_code, CU_out_reg_file_wr_en, CU_out_alu_op_sel, CU_out_alu_operand_2_sel,
+						CU_out_PC_MUX_sel_1);
+
 wire[7:0] PC_REG_in_add;
 wire[7:0] PC_REG_add_out;
 assign PC_REG_in_add = PC_REG_add_out + 1;
 Register #(8) PC_REG(PC_REG_in_add, in_clk, in_rst, PC_REG_add_out);
 
+wire[7:0] PC_MUX_in_jump_add;
+assign PC_MUX_in_jump_add = INSTRUCTION_REG_out_current_instruction[23:16];
+wire[7:0] PC_MUX_out_PC_add;
+PC_Mux PC_MUX(PC_REG_add_out, PC_MUX_in_jump_add, CU_out_PC_MUX_sel_1, PC_MUX_out_PC_add);
+
 wire[28:0] PM_out_instruction;
-Program_Memory PM(PC_REG_add_out, PM_out_instruction);
+Program_Memory PM(PC_MUX_out_PC_add, PM_out_instruction);
 
-wire[28:0] INSTRUCTION_REG_out_current_instruction;
 Register #(29) INSTRUCTION_REG(PM_out_instruction, in_clk, in_rst, INSTRUCTION_REG_out_current_instruction);
-
-wire[4:0] CU_in_op_code;
-assign CU_in_op_code = INSTRUCTION_REG_out_current_instruction[28:24];
-wire CU_out_reg_file_wr_en, CU_out_alu_operand_1_sel;
-wire [1:0]CU_out_alu_op_sel;
-Control_Unit CU(CU_in_op_code, CU_out_reg_file_wr_en, CU_out_alu_op_sel, CU_out_alu_operand_2_sel);
 
 wire REG_FILE_WR_EN_REG_out_reg_file_en;
 Register #(1) REG_FILE_WR_EN_REG(CU_out_reg_file_wr_en, in_clk, in_rst, REG_FILE_WR_EN_REG_out_reg_file_en);
