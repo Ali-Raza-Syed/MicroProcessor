@@ -24,6 +24,7 @@ begin
 		//remove later
 		reg_file[0] <= 1;
 		reg_file[1] <= 2;
+		reg_file[10] <= 1;
 	end
 	else
 	begin

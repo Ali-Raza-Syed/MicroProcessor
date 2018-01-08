@@ -6,19 +6,26 @@ wire[28:0] INSTRUCTION_REG_out_current_instruction;
 wire[4:0] CU_in_op_code;
 assign CU_in_op_code = INSTRUCTION_REG_out_current_instruction[28:24];
 wire CU_out_reg_file_wr_en, CU_out_alu_operand_1_sel, CU_out_PC_MUX_sel_1;
+wire CU_out_mux_1_sel_2, CU_out_mux_2_sel_3;
 wire [1:0]CU_out_alu_op_sel;
 Control_Unit CU(CU_in_op_code, CU_out_reg_file_wr_en, CU_out_alu_op_sel, CU_out_alu_operand_2_sel,
-						CU_out_PC_MUX_sel_1);
+						CU_out_PC_MUX_sel_1, CU_out_mux_1_sel_2, CU_out_mux_2_sel_3);
 
 wire[7:0] PC_REG_in_add;
 wire[7:0] PC_REG_add_out;
 assign PC_REG_in_add = PC_REG_add_out + 1;
 Register #(8) PC_REG(PC_REG_in_add, in_clk, in_rst, PC_REG_add_out);
 
-wire[7:0] PC_MUX_in_jump_add;
-assign PC_MUX_in_jump_add = INSTRUCTION_REG_out_current_instruction[23:16];
+wire[7:0] MUX_1_in_jump_add_instr;
+assign MUX_1_in_jump_add_instr = INSTRUCTION_REG_out_current_instruction[23:16];
+wire[7:0] MUX_1_in_add_reg;
+assign MUX_1_in_add_reg = REGISTER_FILE_out_reg_1_val;
+wire[7:0] MUX_1_out;
+Mux_1 MUX_1(MUX_1_in_jump_add_instr, MUX_1_in_add_reg, CU_out_mux_1_sel_2, MUX_1_out);
+
+
 wire[7:0] PC_MUX_out_PC_add;
-PC_Mux PC_MUX(PC_REG_add_out, PC_MUX_in_jump_add, CU_out_PC_MUX_sel_1, PC_MUX_out_PC_add);
+PC_Mux PC_MUX(PC_REG_add_out, MUX_1_out, CU_out_PC_MUX_sel_1, PC_MUX_out_PC_add);
 
 wire[28:0] PM_out_instruction;
 Program_Memory PM(PC_MUX_out_PC_add, PM_out_instruction);
@@ -36,8 +43,12 @@ wire[7:0] REG_FILE_WRITE_ADD_REG_in = INSTRUCTION_REG_out_current_instruction[23
 wire[7:0] REG_FILE_WRITE_ADD_REG_out;
 Register #(8) REG_FILE_WRITE_ADD_REG(REG_FILE_WRITE_ADD_REG_in, in_clk, in_rst, REG_FILE_WRITE_ADD_REG_out);
 
+wire[7:0] MUX_2_out;
+Mux_2 MUX_2(INSTRUCTION_REG_out_current_instruction[15:8], INSTRUCTION_REG_out_current_instruction[23:16],
+				CU_out_mux_2_sel_3, MUX_2_out);
+
 wire[7:0] REGISTER_FILE_in_read_reg_1_add, REGISTER_FILE_in_read_reg_2_add;
-assign REGISTER_FILE_in_read_reg_1_add = INSTRUCTION_REG_out_current_instruction[15:8];
+assign REGISTER_FILE_in_read_reg_1_add = MUX_2_out;
 assign REGISTER_FILE_in_read_reg_2_add = INSTRUCTION_REG_out_current_instruction[7:0];
 
 wire[15:0] REGISTER_FILE_out_reg_1_val, REGISTER_FILE_out_reg_2_val;
