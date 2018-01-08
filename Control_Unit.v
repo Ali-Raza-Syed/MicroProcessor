@@ -44,6 +44,24 @@ begin
 	out_alu_op_sel = 0;
 	out_alu_operand_1_sel = 1;
 end
+6:
+begin
+	out_reg_file_wr_en = 1;
+	out_alu_op_sel = 1;
+	out_alu_operand_1_sel = 1;
+end
+7:
+begin
+	out_reg_file_wr_en = 1;
+	out_alu_op_sel = 2;
+	out_alu_operand_1_sel = 1;
+end
+8:
+begin
+	out_reg_file_wr_en = 1;
+	out_alu_op_sel = 3;
+	out_alu_operand_1_sel = 1;
+end
 endcase
 end
 
@@ -55,3 +73,6 @@ endmodule
 //3 = and
 //4 = or
 //5 = addi
+//6 = subi
+//7 = andi
+//8 = ori
